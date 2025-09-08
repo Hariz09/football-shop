@@ -1,10 +1,8 @@
 # Tugas PBP : Football Shop - FootbalXpress
 
-## Link Aplikasi : 
-https://pbp.cs.ui.ac.id/web/project/muhammad.hariz41/footballshop/build/01992684-ec29-9653-f58a-c63f010649a8
-
-
-Step-by-Step Implementasi Checklist Django Project
+Link Aplikasi : https://pbp.cs.ui.ac.id/web/project/muhammad.hariz41/footballshop/build/01992684-ec29-9653-f58a-c63f010649a8
+<br></br>
+## Step-by-Step Implementasi Checklist Django Project
 
 1.  Membuat proyek Django baru
     - Masuk ke folder project baru: 
@@ -69,30 +67,35 @@ Step-by-Step Implementasi Checklist Django Project
 
 Dengan langkah-langkah ini, proyek Django yang saya buat tidak hanya
 berjalan di lokal, tetapi juga bisa diakses teman-teman melalui
-
-## bagan Request Client ke Web Aplikasi Berbasis Django 
-Internet.
- |  
- v 
-Bagan Alur Request-Response Django
+<br></br>
+## Bagan Request Client ke Web Aplikasi Berbasis Django 
 [Client Request: Browser mengakses URL]  
+ 
  |  
  v   
+
 urls.py     > Mencocokkan URL yang diminta dengan pola routing   
+
  |  
  v   
+
 views.py    > Mengolah permintaan, memanggil model bila perlu  
+
  |  
  v   
+
 models.py   > Berinteraksi dengan database (ORM Django)  
+
  |  
  v   
+
 Template    > views.py mengembalikan data ke template untuk dirender  
+
  |  
  v 
+ 
 [Response: HTML dikirim ke Client Browser]  
-
-
+<br></br>
 ## Settings.py, Pusat Konfigurasi Django. 
 
 Isinya meliputi:
@@ -102,8 +105,8 @@ Isinya meliputi:
 - Static files & Media files (CSS, JS, gambar).
 - Templates (lokasi file HTML).
 - Security (SECRET_KEY, DEBUG mode, ALLOWED_HOSTS).
-
-# Cara kerja migrasi database di Django?
+<br></br>
+## Cara Kerja Migrasi Database di Django?
 Migrasi digunakan untuk menjaga sinkronisasi antara models.py dan database.
 Buat/ubah model di models.py.
 Jalankan:
@@ -119,6 +122,6 @@ python manage.py migrate
 
 Django mengeksekusi file migrasi, membuat/mengubah tabel sesuai model.
 Dengan migrasi, perubahan struktur database bisa dilacak dan dikelola secara otomatis.
-
-## Mengapa framework Django dijadikan permulaan pembelajaran pengembangan perangkat lunak?
+<br></br>
+## Mengapa Framework Django Dijadikan Permulaan Pembelajaran Pengembangan Perangkat Lunak?
 Django cocok dijadikan framework pertama karena dibangun dengan Python yang sintaksnya sederhana, mudah dipahami pemula dan sudah diajarkan di kelas DDP 1. Django juga sudah menyediakan banyak fitur bawaan (seperti ORM, autentikasi, admin, dan template engine) sehingga pemula bisa langsung fokus memahami alur kerja pengembangan web. Selain itu, Django memiliki struktur yang jelas dengan pola Model-Template-View (MTV) yang membantu belajar membangun aplikasi secara terorganisir. Dokumentasinya lengkap, komunitasnya besar, dan framework ini bisa digunakan untuk proyek kecil hingga skala besar, sehingga sangat ideal untuk mulai belajar pengembangan perangkat lunak berbasis web.
