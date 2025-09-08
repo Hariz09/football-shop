@@ -1,6 +1,6 @@
 # Tugas PBP : Football Shop - FootbalXpress
 
-Link Aplikasi : https://pbp.cs.ui.ac.id/web/project/muhammad.hariz41/footballshop/build/01992684-ec29-9653-f58a-c63f010649a8
+Link Aplikasi : https://muhammad-hariz41-footballshop.pbp.cs.ui.ac.id/
 <br></br>
 ## Step-by-Step Implementasi Checklist Django Project
 
