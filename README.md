@@ -5,7 +5,7 @@ https://pbp.cs.ui.ac.id/web/project/muhammad.hariz41/footballshop/build/01992684
 ## NPM & Nama :
 2406428775 - Muhammad Hariz Albaari
 
-# Tugas 1
+# Tugas 2
 
 
 ## Step-by-Step Implementasi Checklist Django Project
@@ -133,7 +133,7 @@ Dengan migrasi, perubahan struktur database bisa dilacak dan dikelola secara oto
 Django cocok dijadikan framework pertama karena dibangun dengan Python yang sintaksnya sederhana, mudah dipahami pemula dan sudah diajarkan di kelas DDP 1. Django juga sudah menyediakan banyak fitur bawaan (seperti ORM, autentikasi, admin, dan template engine) sehingga pemula bisa langsung fokus memahami alur kerja pengembangan web. Selain itu, Django memiliki struktur yang jelas dengan pola Model-Template-View (MTV) yang membantu belajar membangun aplikasi secara terorganisir. Dokumentasinya lengkap, komunitasnya besar, dan framework ini bisa digunakan untuk proyek kecil hingga skala besar, sehingga sangat ideal untuk mulai belajar pengembangan perangkat lunak berbasis web.
 
 
-# Tugas 2
+# Tugas 3
 
 ## Step-by-Step
 1. Menambahkan Product.id pada model agar dapat diakses by id.
