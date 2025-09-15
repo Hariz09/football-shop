@@ -1,11 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Identitas</title>
+    <meta charset="UTF-8">
+    <title>{{ app_name }}</title>
 </head>
+
 <body>
-    <h1>Nama Aplikasi: {{ app_name }}</h1>
-    <p>Nama: {{ nama }}</p>
-    <p>Kelas: {{ kelas }}</p>
+    <h1>{{ app_name }}</h1>
+    <p><b>Nama:</b> {{ nama }}</p>
+    <p><b>Kelas:</b> {{ kelas }}</p>
+
+    <a href="{% url 'main:create_product' %}">
+        <button>+ Add Product</button>
+    </a>
+
+    <hr>
+
+    {% if not product_list %}
+    <p><i>Belum ada data produk.</i></p>
+    {% else %}
+    {% for product in product_list %}
+    <div>
+        <h2>
+            <a href="{% url 'main:show_product' product.id %}">
+                {{ product.name }}
+            </a>
+        </h2>
+
+        <p>
+            <b>{{ product.category }}</b>
+            {% if product.is_featured %} | <b>Featured</b>{% endif %}
+            | <b>Price:</b> {{ product.price }}
+        </p>
+
+        {% if product.thumbnail %}
+        <img src="{{ product.thumbnail }}" alt="thumbnail" width="150" height="100">
+        <br>
+        {% endif %}
+
+        <p>{{ product.description|truncatewords:25 }}...</p>
+
+        <p>
+            <a href="{% url 'main:show_product' product.id %}">
+                <button>View Details</button>
+            </a>
+        </p>
+    </div>
+    <hr>
+    {% endfor %}
+    {% endif %}
 </body>
+
 </html>

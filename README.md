@@ -1,7 +1,13 @@
 # Tugas PBP : Football Shop - FootbalXpress
+## Link Aplikasi : 
+https://pbp.cs.ui.ac.id/web/project/muhammad.hariz41/footballshop/build/01992684-ec29-9653-f58a-c63f010649a8
 
-Link Aplikasi : https://muhammad-hariz41-footballshop.pbp.cs.ui.ac.id/
-<br></br>
+## NPM & Nama :
+2406428775 - Muhammad Hariz Albaari
+
+# Tugas 1
+
+
 ## Step-by-Step Implementasi Checklist Django Project
 
 1.  Membuat proyek Django baru
@@ -125,3 +131,44 @@ Dengan migrasi, perubahan struktur database bisa dilacak dan dikelola secara oto
 <br></br>
 ## Mengapa Framework Django Dijadikan Permulaan Pembelajaran Pengembangan Perangkat Lunak?
 Django cocok dijadikan framework pertama karena dibangun dengan Python yang sintaksnya sederhana, mudah dipahami pemula dan sudah diajarkan di kelas DDP 1. Django juga sudah menyediakan banyak fitur bawaan (seperti ORM, autentikasi, admin, dan template engine) sehingga pemula bisa langsung fokus memahami alur kerja pengembangan web. Selain itu, Django memiliki struktur yang jelas dengan pola Model-Template-View (MTV) yang membantu belajar membangun aplikasi secara terorganisir. Dokumentasinya lengkap, komunitasnya besar, dan framework ini bisa digunakan untuk proyek kecil hingga skala besar, sehingga sangat ideal untuk mulai belajar pengembangan perangkat lunak berbasis web.
+
+
+# Tugas 2
+
+## Step-by-Step
+1. Menambahkan Product.id pada model agar dapat diakses by id.
+2. Menambahkan 6 fungsi baru pada views.py untuk menambahkan objek model, melihat semua objek model, melihat satu objek model (Dalam bentuk json, xml, atau html (pada template)).
+3. Membuat routing URL untuk masing-masing views yang telah ditambahkan pada poin 2.
+3. Membuat template:
+    - main.html (update) : menampilkan seluruh product, dan menampilkan tombol "Add" untuk produk baru, serta tombol "Detail"   pada setiap data objek model yang akan menampilkan halaman detail objek.
+    - create_product.html : menampilkan form tambah produk menggunakan forms.py (pada views.py)
+    - show_product.html : menampilkan detail produk individual
+5. Membuat forms.py untuk menambahkan product.
+6. Melekukan migration, dan testing pada local dengan 
+    ```bash
+    python manage.py runserver
+    ```
+7. Deploy ke PWS dan commit github 
+
+## Mengapa kita memerlukan data delivery dalam pengimplementasian sebuah platform?
+Data delivery diperlukan dalam pengimplementasian sebuah platform karena berfungsi sebagai jembatan antara penyimpanan data dan pemanfaatannya, tanpa mekanisme penyampaian data yang baik, informasi hanya tersimpan di sistem tanpa bisa diakses atau digunakan. Melalui data delivery, data dapat diakses oleh pengguna, aplikasi lain, maupun layanan eksternal secara konsisten, real-time, dan dalam format yang sesuai (misalnya JSON atau XML).
+
+## Mana yang lebih baik antara XML dan JSON? Mengapa JSON lebih populer dibandingkan XML?
+JSON lebih populer dibandingkan XML karena strukturnya lebih sederhana, ringkas, mudah dibaca manusia, dan cepat diproses oleh mesin, khususnya dalam ekosistem web yang secara native mendukung JavaScript, sedangkan XML meskipun lebih kaya fitur untuk representasi data kompleks dan validasi dengan skema, sintaksnya cenderung lebih berat untuk diproses, sehingga dalam pengembangan aplikasi modern JSON lebih dipilih sebagai standar utama pertukaran data.
+
+## Fungsi dari method is_valid() pada form Django dan mengapa kita membutuhkan method tersebut?
+Method is_valid() pada form Django berfungsi untuk melakukan validasi data yang dikirimkan pengguna sesuai dengan aturan yang sudah didefinisikan di form maupun model terkait. Ketika dipanggil, is_valid() akan mengecek apakah semua field sudah diisi dengan benar, apakah tipe data sesuai (misalnya angka untuk field integer), serta apakah aturan validasi tambahan terpenuhi. Jika semua valid, method ini akan mengembalikan True dan menyimpan data yang sudah dibersihkan di form.cleaned_data; jika tidak valid, ia mengembalikan False dan error akan tersimpan di form.errors.
+
+## Mengapa kita membutuhkan csrf_token saat membuat form di Django? Apa yang dapat terjadi jika kita tidak menambahkan csrf_token pada form Django? Bagaimana hal tersebut dapat dimanfaatkan oleh penyerang?
+Kita membutuhkan **`csrf_token`** pada form di Django karena token ini berfungsi sebagai mekanisme keamanan untuk mencegah **Cross-Site Request Forgery (CSRF)**, yaitu serangan di mana penyerang mencoba mengelabui pengguna agar tanpa sadar mengirimkan permintaan berbahaya ke server (misalnya mengubah password atau melakukan transaksi) dengan memanfaatkan sesi login yang masih aktif. Jika `csrf_token` tidak ditambahkan, Django tidak dapat memastikan bahwa permintaan benar-benar berasal dari form sah di aplikasi, sehingga penyerang bisa membuat halaman berisi form tersembunyi atau script yang otomatis mengirim request ke server atas nama korban. Akibatnya, aksi sensitif seperti transfer dana, perubahan data akun, atau penghapusan informasi bisa dilakukan tanpa sepengetahuan pengguna. Dengan adanya `csrf_token`, setiap form sah memiliki token unik yang diverifikasi server, sehingga permintaan palsu dari luar akan ditolak.
+
+ 
+## Screenshot dari hasil akses URL pada Postman, dan menambahkannya ke dalam README.md.
+XML
+![XML Screenshot](static/tugas-2/xml.png)
+XML By ID
+![XML By Id Screenshot](static/tugas-2/xml_by_id.png)
+JSON
+![JSON Screenshot](static/tugas-2/json.png)
+JSON By ID
+![JSON By Id Screenshot](static/tugas-2/json_by_id.png)
