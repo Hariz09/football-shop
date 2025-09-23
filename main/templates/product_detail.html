@@ -19,5 +19,11 @@
 
     <p><b>Description:</b> {{ product.description }}</p>
     <a href="{% url 'main:show_main' %}"><button>Back to Home</button></a>
+
+    {% if product.user %}
+        <p>Author: {{ product.user.username }}</p>
+    {% else %}
+        <p>Author: Anonymous</p>
+    {% endif %}
 </body>
 </html>

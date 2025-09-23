@@ -172,3 +172,111 @@ JSON
 ![JSON Screenshot](static/tugas-2/json.png)
 JSON By ID
 ![JSON By Id Screenshot](static/tugas-2/json_by_id.png)
+
+# Tugas 4
+## Step-by-Step
+### Mengimplementasikan registrasi, login, dan logout
+- Registrasi menggunakan `UserCreationForm` bawaan Django agar pengguna bisa membuat akun baru.
+- Login menggunakan AuthenticationForm untuk memvalidasi username dan password, lalu menyimpan sesi login dengan fungsi login.
+- Logout menggunakan fungsi logout yang menghapus sesi pengguna, kemudian menghapus cookie `last_login` dan mengarahkan pengguna kembali ke halaman login.
+### Menghubungkan model Product dengan User
+- Model `Product` memiliki relasi ForeignKey ke model User, dengan relasi ini, setiap produk akan tercatat siapa pemiliknya.
+Hal ini juga memungkinkan filtering data produk:
+- `filter=all` → menampilkan semua produk.
+- `filter=my` → menampilkan produk milik pengguna yang sedang login.
+
+### Menampilkan informasi pengguna yang sedang login
+- Pada halaman utama (`show_main`), username pengguna ditampilkan dengan `request.user.username`.
+- Informasi tambahan seperti kelas juga ditampilkan dari context.
+- Cookie `last_login` diset saat pengguna berhasil login, menyimpan waktu terakhir login.
+- Informasi tersebut ditampilkan di halaman utama dengan teks “Sesi terakhir login: …”.
+
+##  Apa itu Django AuthenticationForm? Jelaskan juga kelebihan dan kekurangannya?
+Definisi singkat:
+`django.contrib.auth.forms.AuthenticationForm` adalah form bawaan Django untuk proses login — menyediakan field username dan password, melakukan validasi kredensial melalui `authenticate()` dan mengecek status akun. Konstrukturnya umum: `AuthenticationForm(request=None, data=None, ...) `
+Contoh pemakaian singkat:
+```python
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login
+
+def login_view(request):
+    form = AuthenticationForm(request, data=request.POST or None)
+    if form.is_valid():
+        user = form.get_user()
+        login(request, user)      # login() akan merotasi session key
+        # redirect dst.
+```
+
+Kelebihan:
+- Terintegrasi langsung dengan `django.contrib.auth` dan backend otentikasi — tidak perlu menulis ulang logika autentikasi dasar.
+- Menggunakan mekanisme hashing password Django.
+- Menjalankan pengecekan akun.
+- Mudah dipakai bersama LoginView bawaan.
+- Meminimalkan kesalahan implementasi otentikasi dasar karena sudah teruji.
+
+Kekurangan:
+- Tidak fleksibel: defaultnya pakai username — kalau mau login pakai email/kombinasi perlu kustomisasi atau custom backend.
+- Fitur keamanan lanjutan tidak tersedia: tidak ada 2FA, rate-limiting, atau proteksi brute-force built-in.
+- UI minimal: hanya form logic, styling dan UX harus ditangani sendiri.
+
+## Apa perbedaan antara autentikasi dan otorisasi? Bagaiamana Django mengimplementasikan kedua konsep tersebut?
+### Perbedaan:
+#### Autentikasi (authentication)    : proses memverifikasi identitas pengguna (login username/password, token).
+#### Otorisasi (authorization)       : proses menentukan hak akses setelah identitas terverifikasi.
+
+#### Implementasi di Django — Autentikasi:
+Modul utama: `django.contrib.auth`.
+Mekanisme: `authenticate()` memeriksa kredensial lewat authentication backend, lalu login(request, user) menandakan user sudah login (menyimpan session).
+Middleware: `AuthenticationMiddleware` menambahkan `request.user` (atau `AnonymousUser`) ke setiap request.
+Model user: bisa pakai User bawaan atau membuat custom user (AbstractUser/AbstractBaseUser).
+Tools: `AuthenticationForm`, `LoginView`, `logout()`, `authenticate()`, `login()`.
+Implementasi di Django — Otorisasi:
+Permission model: user.has_perm('app_label.codename'), user.has_perms([...]).
+Group & permissions: Group untuk mengelompokkan permission; permission disetel di model atau via admin.
+Flags: `is_staff`, `is_superuser` untuk membedakan akses admin.
+Dekorator: `@login_required`, `@permission_required('app.change_model')`, `LoginRequiredMixin`, `PermissionRequiredMixin`.
+Template: akses permission via perms context `({% if perms.app.change_model %})`.
+Alur singkat saat request:
+`AuthenticationMiddleware` ambil session → tentukan `request.user`.
+View memeriksa `request.user.is_authenticated` lalu memeriksa permission untuk otorisasi.
+
+## Apa saja kelebihan dan kekurangan session dan cookies dalam konteks menyimpan state di aplikasi web?
+### Cookies (client-side storage):
+#### Kelebihan:
+- Simpel, langsung di browser, persistent (dapat bertahan antar sesi).
+- Berguna untuk preferensi non-sensitif (tema, bahasa, dsb).
+- Tidak butuh penyimpanan server (jika semua data disimpan di cookie).
+
+#### Kekurangan:
+- Ukuran terbatas, terbuka ke klien (user bisa melihat/ubah) kecuali dienkripsi/disigned.
+- Rentan terhadap XSS (jika HttpOnly=False).
+- Bisa dihapus oleh user; tidak cocok untuk data sensitif.
+- Jika digunakan tanpa tanda tangan/enkripsi, mudah dimanipulasi.
+
+### Sessions (server-side, cookie menyimpan session id):
+#### Kelebihan:
+- Data disimpan di server (DB, cache), sehingga aman dari manipulasi klien.
+- Hanya session id yang dikirim lewat cookie → lebih aman.
+- Bisa menyimpan data lebih besar tanpa membebani cookie.
+
+#### Kekurangan:
+- Memerlukan backend server (DB/cache) — ada overhead dan kompleksitas (skalabilitas / invalidasi / cleanup).
+- Masih rentan terhadap pencurian session id (jika cookie dicuri).
+
+## Apakah penggunaan cookies aman secara default dalam pengembangan web, atau apakah ada risiko potensial yang harus diwaspadai? Bagaimana Django menangani hal tersebut?
+Cookies tidak otomatis aman, mereka rentan terhadap XSS, CSRF, sniffing pada koneksi HTTP, dan manipulasi klien. Django menyediakan banyak mitigasi, tetapi developer harus mengonfigurasi dan mengikuti praktik terbaik sebelum produksi.
+
+### Risiko utama:
+- XSS: skrip jahat mencuri cookie kalau HttpOnly tidak diset.
+- CSRF: attacker memaksa browser korban mengirim request berbahaya menggunakan cookie sesi.
+- MITM / sniffing: cookie diintersepsi pada koneksi non-HTTPS.
+- Session fixation: attacker memaksa korban memakai session id milik attacker sebelum login.
+- Manipulasi client-side (jika data disimpan di cookie dan tidak ditandatangani/enkripsi).
+
+### Apa yang Django lakukan:
+- CSRF protection: `CsrfViewMiddleware` + template tag `{% csrf_token %}` melindungi POST/unsafe requests.
+- Session engine: default menyimpan session server-side (`django.contrib.sessions.backends.db`) — hanya sessionid di cookie.
+- `SESSION_COOKIE_HTTPONLY`: biasanya True oleh default → cookie sesi tidak dapat diakses via JavaScript.
+- `SESSION_COOKIE_SAMESITE`: default biasanya 'Lax' → mengurangi pengiriman cookie cross-site; bisa set 'Strict' untuk lebih ketat.
+- `SESSION_COOKIE_SECURE` / `CSRF_COOKIE_SECURE`: default False (agar dev lokal tetap bekerja) — harus di-set True di produksi (pws) jika memakai HTTPS supaya cookie hanya dikirim lewat koneksi aman.
+- `login()` merotasi session key (session.cycle_key) → mitigasi session fixation saat autentikasi.
