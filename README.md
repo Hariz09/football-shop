@@ -165,13 +165,13 @@ Kita membutuhkan **`csrf_token`** pada form di Django karena token ini berfungsi
  
 ## Screenshot dari hasil akses URL pada Postman, dan menambahkannya ke dalam README.md.
 XML
-![XML Screenshot](static/tugas-2/xml.png)
+![XML Screenshot](static/images/tugas-2/xml.png)
 XML By ID
-![XML By Id Screenshot](static/tugas-2/xml_by_id.png)
+![XML By Id Screenshot](static/images/tugas-2/xml_by_id.png)
 JSON
-![JSON Screenshot](static/tugas-2/json.png)
+![JSON Screenshot](static/images/tugas-2/json.png)
 JSON By ID
-![JSON By Id Screenshot](static/tugas-2/json_by_id.png)
+![JSON By Id Screenshot](static/images/tugas-2/json_by_id.png)
 
 # Tugas 4
 ## Step-by-Step
