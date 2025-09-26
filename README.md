@@ -225,18 +225,18 @@ Kekurangan:
 #### Otorisasi (authorization)       : proses menentukan hak akses setelah identitas terverifikasi.
 
 #### Implementasi di Django — Autentikasi:
-Modul utama: `django.contrib.auth`.
-Mekanisme: `authenticate()` memeriksa kredensial lewat authentication backend, lalu login(request, user) menandakan user sudah login (menyimpan session).
-Middleware: `AuthenticationMiddleware` menambahkan `request.user` (atau `AnonymousUser`) ke setiap request.
-Model user: bisa pakai User bawaan atau membuat custom user (AbstractUser/AbstractBaseUser).
+- Modul utama: `django.contrib.auth`.
+- Mekanisme: `authenticate()` memeriksa kredensial lewat authentication backend, lalu login(request, user) menandakan user sudah login (menyimpan session).
+- Middleware: `AuthenticationMiddleware` menambahkan `request.user` (atau `AnonymousUser`) ke setiap request.
+- Model user: bisa pakai User bawaan atau membuat custom user (AbstractUser/AbstractBaseUser).
 Tools: `AuthenticationForm`, `LoginView`, `logout()`, `authenticate()`, `login()`.
 Implementasi di Django — Otorisasi:
-Permission model: user.has_perm('app_label.codename'), user.has_perms([...]).
-Group & permissions: Group untuk mengelompokkan permission; permission disetel di model atau via admin.
-Flags: `is_staff`, `is_superuser` untuk membedakan akses admin.
-Dekorator: `@login_required`, `@permission_required('app.change_model')`, `LoginRequiredMixin`, `PermissionRequiredMixin`.
-Template: akses permission via perms context `({% if perms.app.change_model %})`.
-Alur singkat saat request:
+- Permission model: user.has_perm('app_label.codename'), user.has_perms([...]).
+- Group & permissions: Group untuk mengelompokkan permission; permission disetel di model atau via admin.
+- Flags: `is_staff`, `is_superuser` untuk membedakan akses admin.
+- Dekorator: `@login_required`, `@permission_required('app.change_model')`, `LoginRequiredMixin`, `PermissionRequiredMixin`.
+- Template: akses permission via perms context `({% if perms.app.change_model %})`.
+- Alur singkat saat request:
 `AuthenticationMiddleware` ambil session → tentukan `request.user`.
 View memeriksa `request.user.is_authenticated` lalu memeriksa permission untuk otorisasi.
 
