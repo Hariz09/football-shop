@@ -280,3 +280,154 @@ Cookies tidak otomatis aman, mereka rentan terhadap XSS, CSRF, sniffing pada kon
 - `SESSION_COOKIE_SAMESITE`: default biasanya 'Lax' → mengurangi pengiriman cookie cross-site; bisa set 'Strict' untuk lebih ketat.
 - `SESSION_COOKIE_SECURE` / `CSRF_COOKIE_SECURE`: default False (agar dev lokal tetap bekerja) — harus di-set True di produksi (pws) jika memakai HTTPS supaya cookie hanya dikirim lewat koneksi aman.
 - `login()` merotasi session key (session.cycle_key) → mitigasi session fixation saat autentikasi.
+
+# Tugas 5
+## Step-by-Step
+1. Konfigurasi Static Files
+    - Menentukan STATIC_URL dan STATICFILES_DIRS di settings.py.
+    ```python
+    STATIC_URL = '/static/'
+    if DEBUG:
+        STATICFILES_DIRS = [
+            BASE_DIR / 'static' # merujuk ke /static root project pada mode development
+        ]
+    else:
+        STATIC_ROOT = BASE_DIR / 'static' # merujuk ke /static root project pada mode production
+    ```
+    - Membuat folder dan file static/css dan global.css.
+
+2. Integrasi Tailwind
+    - Menghubungkan CSS Tailwind dan global.css di base.html.
+    ```html
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}"/>
+    ```
+
+3. Navigation Bar
+    - Menambahkan navbar.html dan dihubungkan ke main.html.
+    ```html
+    {% include 'navbar.html' %}
+    ```
+    - Menyesuaikan desain agar responsif di berbagai ukuran layar.
+
+4. Implementasi CRUD Product
+    - Edit Product: Menyediakan form, view, dan template.
+    - Hapus Product: Menyediakan tombol delete di card_product.
+    - Membuat card_product untuk mengimplementasi crud diatas.
+
+
+5. Styling Halaman Aplikasi
+    - Login Page, Register Page, Product Detail Page, Edit Product Page, Main Page dan Navbar.
+
+## Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
+Urutan prioritas CSS selector ditentukan oleh spesifisitas dan aturan cascading. Berikut urutannya dari yang paling rendah ke paling tinggi:
+- Selector elemen/tag (div, p, h1)
+Prioritas rendah, misal: p { color: blue; }
+- Selector class, attribute, pseudo-class (.class, [type="text"], :hover)
+Lebih spesifik daripada tag, misal: .btn { color: red; }
+- Selector ID (#id)
+Lebih spesifik daripada class, misal: #submit { color: green; }
+- Inline style (style="color: black;")
+Lebih tinggi daripada ID, langsung ditulis di atribut elemen
+- !important
+Menimpa semua aturan lain, kecuali ada !important lain dengan spesifisitas lebih tinggi
+
+## Mengapa responsive design menjadi konsep yang penting dalam pengembangan aplikasi web? Berikan contoh aplikasi yang sudah dan belum menerapkan responsive design, serta jelaskan mengapa!
+Karena memungkinkan tampilan dan fungsionalitas web menyesuaikan diri dengan berbagai ukuran layar dan perangkat (desktop, tablet, smartphone) tanpa harus membuat versi terpisah. Hal ini meningkatkan user experience, aksesibilitas, dan retensi pengguna, sekaligus mempermudah pemeliharaan dan optimasi SEO.
+
+### Contoh aplikasi yang sudah menerapkan responsive design
+#### Google Search
+- Tampilan menyesuaikan otomatis antara desktop dan smartphone.
+- Menu, kolom pencarian, dan hasil pencarian tetap rapi dan mudah digunakan di semua perangkat.
+
+#### Twitter
+Layout fleksibel, gambar dan teks menyesuaikan layar, tombol interaksi tetap mudah dijangkau.
+
+Alasan: Mereka menggunakan CSS media queries, grid/flexbox, dan desain berbasis persentase untuk elemen sehingga layout fleksibel.
+
+### Contoh aplikasi yang belum menerapkan responsive design
+Website lama universitas atau pemerintah
+Tampilan di smartphone sering pecah, kolom melebar, teks dan tombol terlalu kecil untuk disentuh.
+
+Intinya, tanpa responsive design, pengguna di perangkat kecil harus zoom dan scroll lebih banyak, yang mengurangi kenyamanan dan bisa membuat mereka meninggalkan aplikasi.
+
+
+## Jelaskan perbedaan antara margin, border, dan padding, serta cara untuk mengimplementasikan ketiga hal tersebut!
+===========================
+      BOX MODEL
+===========================
+
+Properti       | Fungsi                                         | Lokasi
+---------------|------------------------------------------------|--------------------
+Margin         | Memberi jarak LUAR antara elemen dengan lain   | Bagian LUAR box
+Border         | Membuat garis pembatas di sekitar elemen       | Tepat di luar PADDING
+Padding        | Memberi jarak DALAM antara konten & border     | Di antara CONTENT & BORDER
+
+Contoh Visualisasi:
+```
++---------------------------+
+|        Margin             |
+|  +---------------------+  |
+|  |  Border             |  |
+|  |  +---------------+  |  |
+|  |  | Padding       |  |  |
+|  |  | Content       |  |  |
+|  |  +---------------+  |  |
+|  +---------------------+  |
++---------------------------+
+```
+Contoh Implementasi CSS:
+```css
+div {
+  margin: 20px;          /* jarak luar */
+  padding: 10px;         /* jarak dalam */
+  border: 2px solid red; /* garis pembatas */
+  background-color: lightblue;
+}
+```
+
+## Jelaskan konsep flex box dan grid layout beserta kegunaannya!
+### FLEXBOX (Flexible Box Layout)
+
+Konsep:
+- Mengatur layout elemen dalam SATU DIMENSI (baris atau kolom)
+- Elemen anak bisa menyusut atau membesar sesuai ruang
+- Fokus pada alignment, distribusi ruang, dan urutan elemen
+
+Kegunaan:
+- Menu navigasi horizontal atau vertikal
+- Menyusun elemen agar merata dan responsif di satu baris/kolom
+- Center alignment vertikal dan horizontal
+
+Contoh CSS:
+```css
+.container {
+  display: flex;                  /* aktifkan flexbox */
+  justify-content: space-between; /* jarak antar elemen */
+  align-items: center;            /* align vertikal */
+}
+```
+
+### GRID LAYOUT (CSS Grid)
+Konsep:
+- Mengatur layout elemen dalam DUA DIMENSI (baris & kolom)
+- Lebih fleksibel untuk layout kompleks
+- Bisa menentukan ukuran baris/kolom, posisi elemen, dan gap antar grid
+
+Kegunaan:
+- Layout halaman website: header, sidebar, main, footer
+- Gallery atau tabel produk dengan baris dan kolom rapi
+- Membuat desain responsif dengan fraksi dan template area
+
+Contoh CSS:
+```css
+.container {
+  display: grid;                  /* aktifkan grid */
+  grid-template-columns: 1fr 2fr; /* 2 kolom, proporsi 1:2 */
+  grid-gap: 10px;                 /* jarak antar grid */
+}
+```
+
+Kesimpulan:
+- Flexbox: satu dimensi → cocok untuk baris atau kolom sederhana
+- Grid: dua dimensi → cocok untuk layout kompleks dengan banyak baris & kolom
