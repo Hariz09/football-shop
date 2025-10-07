@@ -431,3 +431,163 @@ Contoh CSS:
 Kesimpulan:
 - Flexbox: satu dimensi → cocok untuk baris atau kolom sederhana
 - Grid: dua dimensi → cocok untuk layout kompleks dengan banyak baris & kolom
+
+# Tugas 6
+
+## Step-by-Step
+1. **Mengubah fitur CRUD menggunakan AJAX**
+   - Membuat endpoint AJAX untuk Create (`add_product_entry_ajax`)
+   - Membuat endpoint AJAX untuk Update (`edit_product_ajax`)
+   - Membuat endpoint AJAX untuk Delete (`delete_product_ajax`)
+   - Mengubah tampilan produk untuk menggunakan fetch API dari endpoint JSON
+
+2. **Mengubah Login dan Register menggunakan AJAX**
+   - Membuat endpoint `ajax_login` dan `ajax_register`
+   - Mengubah form login dan register untuk menggunakan fetch API
+   - Menambahkan validasi dan error handling
+
+3. **Implementasi Modal dan UI Interaktif**
+   - Membuat modal untuk create dan edit product
+   - Membuat modal konfirmasi untuk delete product
+   - Menambahkan tombol refresh untuk memperbarui daftar produk
+   - Implementasi loading, empty, dan error states
+
+4. **Sistem Toast Notification**
+   - Membuat sistem toast yang unik dengan animasi dan ikon
+   - Toast untuk semua operasi CRUD, login, logout, dan register
+   - Berbagai jenis toast: success, error, info, warning
+
+## Pertanyaan dan Jawaban
+
+### 1. Apa perbedaan antara synchronous request dan asynchronous request?
+
+**Synchronous Request:**
+- Eksekusi kode berjalan secara berurutan (blocking)
+- Browser menunggu response sebelum melanjutkan ke kode berikutnya
+- Halaman web akan "freeze" selama request berlangsung
+- User tidak bisa berinteraksi dengan halaman sampai request selesai
+
+**Asynchronous Request:**
+- Eksekusi kode tidak blocking, bisa berjalan bersamaan
+- Browser tidak menunggu response dan melanjutkan eksekusi kode lain
+- Halaman web tetap responsif selama request berlangsung
+- User bisa tetap berinteraksi dengan halaman
+- Menggunakan callback, Promise, atau async/await untuk menangani response
+
+### 2. Bagaimana AJAX bekerja di Django (alur request–response)?
+
+**Alur AJAX di Django:**
+
+1. **Frontend (JavaScript):**
+   ```javascript
+   fetch('/ajax-endpoint/', {
+     method: 'POST',
+     body: formData,
+     headers: {'X-CSRFToken': csrfToken}
+   })
+   ```
+
+2. **Django URLs:** Request diarahkan ke view yang sesuai melalui `urls.py`
+
+3. **Django Views:**
+   ```python
+   @csrf_exempt
+   @require_POST
+   def ajax_view(request):
+       # Process data
+       return JsonResponse({'status': 'success'})
+   ```
+
+4. **Response:** Django mengembalikan JSON response
+
+5. **Frontend Processing:** JavaScript menerima response dan memperbarui DOM
+   ```javascript
+   .then(response => response.json())
+   .then(data => {
+       // Update UI without page reload
+   })
+   ```
+
+### 3. Apa keuntungan menggunakan AJAX dibandingkan render biasa di Django?
+
+**Keuntungan AJAX:**
+
+1. **User Experience yang Lebih Baik:**
+   - Tidak ada page reload yang mengganggu
+   - Interaksi lebih smooth dan responsif
+   - Loading states yang informatif
+
+2. **Performance:**
+   - Hanya data yang diperlukan yang dikirim (JSON)
+   - Bandwidth lebih efisien
+   - Server load berkurang
+
+3. **Interaktivitas:**
+   - Real-time updates tanpa refresh
+   - Multiple operations bisa berjalan bersamaan
+   - Validasi form yang instant
+
+4. **Modern Web Standards:**
+   - Sesuai dengan Single Page Application (SPA) patterns
+   - Better mobile experience
+   - Progressive Web App capabilities
+
+### 4. Bagaimana cara memastikan keamanan saat menggunakan AJAX untuk fitur Login dan Register di Django?
+
+**Langkah-langkah Keamanan:**
+
+1. **CSRF Protection:**
+   ```python
+   @csrf_exempt  # Hanya untuk AJAX endpoints
+   # Atau gunakan CSRF token di header
+   ```
+
+2. **Input Validation & Sanitization:**
+   ```python
+   from django.utils.html import strip_tags
+   name = strip_tags(request.POST.get("name"))
+   ```
+
+3. **Authentication & Authorization:**
+   ```python
+   @login_required
+   def ajax_view(request):
+       # Pastikan user terautentikasi
+   ```
+
+4. **HTTPS:** Gunakan HTTPS untuk enkripsi data transmission
+
+5. **Rate Limiting:** Implementasi rate limiting untuk mencegah brute force
+
+6. **Proper Error Handling:** Jangan expose sensitive information di error messages
+
+7. **Session Management:** Proper session handling dan timeout
+
+### 5. Bagaimana AJAX mempengaruhi pengalaman pengguna (User Experience) pada website?
+
+**Dampak Positif AJAX terhadap UX:**
+
+1. **Responsivitas:**
+   - Eliminasi page reload yang mengganggu
+   - Interaksi yang lebih cepat dan smooth
+   - Feedback yang immediate
+
+2. **Kontinuitas:**
+   - User tidak kehilangan context saat berinteraksi
+   - Scroll position dan form state tetap terjaga
+   - Seamless navigation experience
+
+3. **Visual Feedback:**
+   - Loading indicators yang informatif
+   - Toast notifications untuk feedback
+   - Progressive disclosure of information
+
+4. **Efficiency:**
+   - Reduced data transfer (hanya JSON)
+   - Faster perceived performance
+   - Better mobile experience dengan bandwidth terbatas
+
+5. **Modern Interaction Patterns:**
+   - Real-time updates
+   - Inline editing capabilities
+   - Modal dialogs untuk focused tasks

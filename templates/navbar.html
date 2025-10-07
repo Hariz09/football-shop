@@ -24,9 +24,9 @@
             <div class="text-sm font-medium text-gray-900">{{ name|default:user.username }}</div>
             <div class="text-xs text-gray-500">{{ npm|default:"2406428775" }} - {{ class|default:"PBP E" }}</div>
           </div>
-          <a href="{% url 'main:logout' %}" class="text-gray-900 hover:text-gray-800 font-medium transition-colors">
+          <button onclick="logoutUser()" class="text-gray-900 hover:text-gray-800 font-medium transition-colors">
             Logout
-          </a>
+          </button>
         {% else %}
           <a href="{% url 'main:login' %}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">
             Login
@@ -71,9 +71,9 @@
             <div class="font-medium text-gray-900">{{ name|default:user.username }}</div>
             <div class="text-sm text-gray-500">{{ npm|default:"2406428775" }} - {{ class|default:"PBP E" }}</div>
           </div>
-          <a href="{% url 'main:logout' %}" class="block text-gray-900 hover:text-gray-800 font-medium py-3 transition-colors">
+          <button onclick="logoutUser()" class="block text-gray-900 hover:text-gray-800 font-medium py-3 transition-colors w-full text-left">
             Logout
-          </a>
+          </button>
         {% else %}
           <div class="space-y-3">
             <a href="{% url 'main:login' %}" class="block text-gray-600 hover:text-gray-900 font-medium py-3 transition-colors">
@@ -91,9 +91,44 @@
   <script>
     const btn = document.querySelector("button.mobile-menu-button");
     const menu = document.querySelector(".mobile-menu");
-  
+
     btn.addEventListener("click", () => {
       menu.classList.toggle("hidden");
     });
+
+    // AJAX Logout function
+    async function logoutUser() {
+      try {
+        const response = await fetch("{% url 'main:ajax_logout' %}", {
+          method: "POST",
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+          },
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          if (typeof showToast === 'function') {
+            showToast('Logout successful!', '', 'success');
+          }
+          // Redirect to login page after a short delay
+          setTimeout(() => {
+            window.location.href = "{% url 'main:login' %}";
+          }, 1000);
+        } else {
+          if (typeof showToast === 'function') {
+            showToast('Error', result.message || 'Logout failed', 'error');
+          }
+        }
+      } catch (error) {
+        if (typeof showToast === 'function') {
+          showToast('Error', 'Network error occurred', 'error');
+        }
+      }
+    }
+
+    // Make logout function globally available
+    window.logoutUser = logoutUser;
   </script>
 </nav>

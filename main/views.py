@@ -8,9 +8,11 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 import datetime
-from django.http import HttpResponseRedirect
 from django.urls import reverse
-
+from django.http import HttpResponseRedirect, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.utils.html import strip_tags
 
 @login_required(login_url='/login')
 def show_main(request):
@@ -58,8 +60,21 @@ def show_xml(request):
 
 def show_json(request):
     product_list = Product.objects.all()
-    json_data = serializers.serialize("json", product_list)
-    return HttpResponse(json_data, content_type="application/json")
+    data = [
+        {
+            'id': str(product.id),
+            'name': product.name,
+            'price': product.price,
+            'description': product.description,
+            'thumbnail': product.thumbnail,
+            'category': product.category,
+            'is_featured': product.is_featured,
+            'user_id': product.user_id,
+        }
+        for product in product_list
+    ]
+
+    return JsonResponse(data, safe=False)
 
 def show_xml_by_id(request, product_id):
    try:
@@ -68,13 +83,23 @@ def show_xml_by_id(request, product_id):
        return HttpResponse(xml_data, content_type="application/xml")
    except Product.DoesNotExist:
        return HttpResponse(status=404)
+
 def show_json_by_id(request, product_id):
-   try:
-       product_item = Product.objects.get(pk=product_id)
-       json_data = serializers.serialize("json", [product_item])
-       return HttpResponse(json_data, content_type="application/json")
-   except Product.DoesNotExist:
-       return HttpResponse(status=404)
+    try:
+        product = Product.objects.get(pk=product_id)
+        data = {
+            'id': str(product.id),
+            'name': product.name,
+            'price': product.price,
+            'description': product.description,
+            'thumbnail': product.thumbnail,
+            'category': product.category,
+            'is_featured': product.is_featured,
+            'user_id': product.user_id,
+        }
+        return JsonResponse(data)
+    except Product.DoesNotExist:
+        return JsonResponse({'error': 'Product not found'}, status=404)
    
 def register(request):
     form = UserCreationForm()
@@ -110,6 +135,14 @@ def logout_user(request):
     response.delete_cookie('last_login')
     return response
 
+@csrf_exempt
+@require_POST
+def ajax_logout(request):
+    logout(request)
+    response = JsonResponse({"status": "success", "message": "Logout successful!"})
+    response.delete_cookie('last_login')
+    return response
+
 def edit_product(request, id):
     product = get_object_or_404(Product, pk=id)
     form = ProductForm(request.POST or None, instance=product)
@@ -124,6 +157,93 @@ def edit_product(request, id):
     return render(request, "edit_product.html", context)
 
 def delete_product(request, id):
-    product = get_object_or_404(pk=id)
+    product = get_object_or_404(Product, pk=id)
     product.delete()
     return HttpResponseRedirect(reverse('main:show_main'))
+
+@csrf_exempt
+@require_POST
+def add_product_entry_ajax(request):
+    name = strip_tags(request.POST.get("name")) # strip HTML tags!
+    price = request.POST.get("price")
+    description = strip_tags(request.POST.get("description")) # strip HTML tags!
+    category = request.POST.get("category")
+    thumbnail = request.POST.get("thumbnail")
+    is_featured = request.POST.get("is_featured") == 'on'  # handle checkbox
+    user = request.user if request.user.is_authenticated else None
+
+    new_product = Product(
+        name=name,
+        price=price,
+        description=description,
+        category=category,
+        thumbnail=thumbnail,
+        is_featured=is_featured,
+        user=user
+    )
+    new_product.save()
+
+    return HttpResponse(b"CREATED", status=201)
+
+@csrf_exempt
+@require_POST
+def ajax_register(request):
+    form = UserCreationForm(request.POST)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"status": "success", "message": "Account created successfully!"}, status=201)
+    return JsonResponse({"status": "error", "errors": form.errors}, status=400)
+
+
+@csrf_exempt
+@require_POST
+def ajax_login(request):
+    form = AuthenticationForm(data=request.POST)
+    if form.is_valid():
+        user = form.get_user()
+        login(request, user)
+        response = JsonResponse({"status": "success", "message": "Login successful!"})
+        response.set_cookie('last_login', str(datetime.datetime.now()))
+        return response
+    return JsonResponse({"status": "error", "errors": form.errors}, status=400)
+
+@csrf_exempt
+@require_POST
+def edit_product_ajax(request, id):
+    try:
+        product = get_object_or_404(Product, pk=id, user=request.user)
+
+        name = strip_tags(request.POST.get("name"))
+        price = request.POST.get("price")
+        description = strip_tags(request.POST.get("description"))
+        category = request.POST.get("category")
+        thumbnail = request.POST.get("thumbnail")
+        is_featured = request.POST.get("is_featured") == 'on'
+
+        # Update product fields
+        product.name = name
+        product.price = price
+        product.description = description
+        product.category = category
+        product.thumbnail = thumbnail
+        product.is_featured = is_featured
+        product.save()
+
+        return JsonResponse({"status": "success", "message": "Product updated successfully!"})
+    except Product.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Product not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+@csrf_exempt
+@require_POST
+def delete_product_ajax(request, id):
+    try:
+        product = get_object_or_404(Product, pk=id, user=request.user)
+        product.delete()
+        return JsonResponse({"status": "success", "message": "Product deleted successfully!"})
+    except Product.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Product not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=400)
+

@@ -17,49 +17,221 @@
       <p class="text-gray-600">Welcome, {{ nama }} ({{ kelas }})</p>
     </div>
 
-    <!-- Filter + Action Section -->
-    <div
-      class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-lg border border-gray-200 p-4">
+    <!-- CSRF Token for AJAX requests -->
+    {% csrf_token %}
+
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap gap-3 mb-4">
+      <button onclick="showModal()"
+        class="inline-flex items-center px-4 py-2 bg-white text-orange-600 font-semibold outline outline-2 outline-orange-600 outline-offset-[-2px] rounded-md hover:bg-orange-600 hover:text-white transition-colors">
+        + Add Product by AJAX
+      </button>
+      <button onclick="refreshProducts()"
+        class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-md hover:bg-gray-200 transition-colors">
+        🔄 Refresh
+      </button>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-lg border border-gray-200 p-4">
       <div class="flex space-x-3 mb-4 sm:mb-0">
-        <a href="?filter=all"
-          class="{% if request.GET.filter == 'all' or not request.GET.filter %} bg-orange-500 text-white{% else %} bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-orange-600 hover:text-white">
+        <a id="filter-all"
+          class="bg-orange-600 text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-orange-700">
           All Products
         </a>
-        <a href="?filter=my"
-          class="{% if request.GET.filter == 'my' %} bg-orange-500 text-white{% else %} bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-orange-600 hover:text-white">
+        <a id="filter-my"
+          class="bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-orange-600 hover:text-white">
           My Products
         </a>
       </div>
-      <div class="flex items-center space-x-4 text-sm text-gray-500">
-        <span>Last login: {{ last_login }}</span>
-        <a href="{% url 'main:create_product' %}"
-          class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors">+ Add Product</a>
-        <a href="{% url 'main:logout' %}"
-          class="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors">Logout</a>
-      </div>
+      {% if user.is_authenticated %}
+      <div class="text-sm text-gray-500">Last login: {{ last_login }}</div>
+      {% endif %}
     </div>
 
+    <!-- Loading State -->
+    <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <svg class="animate-spin h-8 w-8 text-orange-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="text-gray-600 mt-3">Loading products...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error" class="hidden text-center text-red-600 font-medium py-6">Error loading data.</div>
+
     <!-- Product Grid -->
-    {% if not product_list %}
-    <div class="bg-white rounded-lg border border-gray-200 p-12 text-center">
+    <div id="grid" class="hidden"></div>
+
+    <!-- Empty State -->
+    <div id="empty" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
       <div class="w-32 h-32 mx-auto mb-4">
         <img src="{% static 'images/no-product.png' %}" alt="No products" class="w-full h-full object-contain">
       </div>
       <h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
       <p class="text-gray-500 mb-6">Start by adding your first product.</p>
-      <a href="{% url 'main:create_product' %}"
-        class="inline-flex items-center px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors">
+      <button onclick="showModal()"
+        class="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors">
         Add Product
-      </a>
+      </button>
     </div>
-    {% else %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {% for product in product_list %}
-      {% include 'card_product.html' with product=product %}
-      {% endfor %}
-    </div>
-    {% endif %}
-
   </div>
 </div>
+
+<script>
+  // Configuration
+  const PRODUCT_API_ENDPOINT = "{% url 'main:show_json' %}";
+  const CURRENT_USER_ID = "{{ user.id|default_if_none:'' }}";
+
+  // DOM Elements
+  const loadingSpinner = document.getElementById('loading');
+  const errorMessage = document.getElementById('error');
+  const emptyStateDisplay = document.getElementById('empty');
+  const productGridContainer = document.getElementById('grid');
+  const showAllButton = document.getElementById('filter-all');
+  const showMyButton = document.getElementById('filter-my');
+
+  // State
+  let activeFilter = 'all';
+  let allProducts = [];
+
+  // Update filter buttons
+  function updateFilterButtons() {
+    if (activeFilter === 'all') {
+      showAllButton.className = 'bg-orange-600 text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-orange-700';
+      showMyButton.className = 'bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-orange-600 hover:text-white';
+    } else {
+      showMyButton.className = 'bg-orange-600 text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-orange-700';
+      showAllButton.className = 'bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-orange-600 hover:text-white';
+    }
+  }
+
+  // Show/hide sections
+  function displaySection({ loading = false, error = false, empty = false, grid = false }) {
+    loadingSpinner.classList.toggle('hidden', !loading);
+    errorMessage.classList.toggle('hidden', !error);
+    emptyStateDisplay.classList.toggle('hidden', !empty);
+    productGridContainer.classList.toggle('hidden', !grid);
+
+    if (grid) productGridContainer.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+  }
+
+  // Build product card
+  function buildProductCard(product) {
+    const div = document.createElement('div');
+    div.className = 'bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow';
+
+    const imgHtml = product.thumbnail
+      ? `<img src="${DOMPurify.sanitize(product.thumbnail)}" alt="${DOMPurify.sanitize(product.name)}" class="w-full h-48 object-cover">`
+      : `<div class="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400 text-sm">No Image</div>`;
+
+    const editDeleteHtml = CURRENT_USER_ID && Number(CURRENT_USER_ID) === Number(product.user_id)
+      ? `<div class="flex justify-end space-x-3 mt-3">
+            <button onclick="editProduct('${product.id}')" class="text-gray-600 hover:text-gray-700 text-sm font-medium">Edit</button>
+            <button onclick="deleteProduct('${product.id}')" class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
+         </div>`
+      : '';
+
+    div.innerHTML = `
+      ${imgHtml}
+      <div class="p-5">
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">${DOMPurify.sanitize(product.name)}</h3>
+        <p class="text-gray-600 mb-3">${DOMPurify.sanitize(product.description)}</p>
+        <p class="text-orange-600 font-bold mb-3">Rp ${product.price.toLocaleString()}</p>
+        <span class="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">${DOMPurify.sanitize(product.category)}</span>
+        ${editDeleteHtml}
+      </div>
+    `;
+    return div;
+  }
+
+  // Render product cards
+  function renderProducts(products) {
+    productGridContainer.innerHTML = '';
+    products.forEach(p => productGridContainer.appendChild(buildProductCard(p)));
+  }
+
+  // Filter and display
+  function filterAndDisplay() {
+    updateFilterButtons();
+    const filtered = activeFilter === 'all'
+      ? allProducts
+      : allProducts.filter(p => Number(p.user_id) === Number(CURRENT_USER_ID));
+
+    if (filtered.length === 0) displaySection({ empty: true });
+    else {
+      renderProducts(filtered);
+      displaySection({ grid: true });
+    }
+  }
+
+  // Fetch from server
+  async function fetchProducts() {
+    try {
+      displaySection({ loading: true });
+      const res = await fetch(PRODUCT_API_ENDPOINT);
+      if (!res.ok) throw new Error('Failed to fetch data');
+      const data = await res.json();
+      allProducts = data || [];
+      filterAndDisplay();
+    } catch (err) {
+      console.error(err);
+      displaySection({ error: true });
+    }
+  }
+
+  // Initialize
+  showAllButton.addEventListener('click', () => {
+    activeFilter = 'all';
+    filterAndDisplay();
+  });
+
+  showMyButton.addEventListener('click', () => {
+    activeFilter = 'my';
+    filterAndDisplay();
+  });
+
+  // Load initial data
+  fetchProducts();
+
+  // Refresh grid after modal submit
+  document.addEventListener('productAdded', () => fetchProducts());
+
+  // Edit product function
+  async function editProduct(productId) {
+    try {
+      const response = await fetch(`{% url 'main:show_json_by_id' 'PLACEHOLDER' %}`.replace('PLACEHOLDER', productId));
+      if (response.ok) {
+        const productData = await response.json();
+        showModal('edit', productData);
+      } else {
+        showToast('Error', 'Failed to load product data', 'error');
+      }
+    } catch (error) {
+      showToast('Error', 'Network error occurred', 'error');
+    }
+  }
+
+  // Delete product function
+  function deleteProduct(productId) {
+    // Find the product name for the modal
+    const product = allProducts.find(p => p.id === productId);
+    const productName = product ? product.name : 'this product';
+    showDeleteModal(productId, productName);
+  }
+
+  // Refresh products function
+  function refreshProducts() {
+    fetchProducts();
+    showToast('Products refreshed!', '', 'success');
+  }
+
+  // Make functions globally available
+  window.editProduct = editProduct;
+  window.deleteProduct = deleteProduct;
+  window.refreshProducts = refreshProducts;
+</script>
+
 {% endblock content %}
